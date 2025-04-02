@@ -85,7 +85,7 @@ export const fetchParkingFines = async (vehicle) => {
 
   try {
     await page.goto("https://parking.tbilisi.gov.ge/fines?isTransit=false");
-    await page.waitFor(7000);
+    await new Promise((resolve) => setTimeout(resolve, 7000));
 
     const finesInfo = [];
 
