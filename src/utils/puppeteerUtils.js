@@ -76,13 +76,7 @@ export const getFinesFromPoliceGe = async (vehicleNo, documentNo) => {
 // ფუნქცია შეჩერებისათვის
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-import { chromium } from "playwright";
-
 export const fetchParkingFines = async (vehicle) => {
-  // const browser = await chromium.launch({
-  //   headless: true,
-  //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  // });
   const browser = await puppeteer.launch({
     headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -91,7 +85,7 @@ export const fetchParkingFines = async (vehicle) => {
 
   try {
     await page.goto("https://parking.tbilisi.gov.ge/fines?isTransit=false");
-    await page.waitForTimeout(7000);
+    await page.waitFor(7000);
 
     const finesInfo = [];
 
