@@ -89,8 +89,8 @@ export const fetchParkingFines = async (vehicle) => {
 
     const finesInfo = [];
 
-    await page.fill("#mat-input-0", vehicle.vehicleNo);
-    await page.fill("#mat-input-1", vehicle.companyCode);
+    await page.type("#mat-input-0", vehicle.vehicleNo);
+    await page.type("#mat-input-1", vehicle.companyCode);
 
     await page.waitForSelector("button.mat-raised-button:not([disabled])", {
       timeout: 3000,
@@ -104,7 +104,11 @@ export const fetchParkingFines = async (vehicle) => {
         timeout: 5000,
       });
 
-      const fines = await page.locator(".mat-cell.cdk-column-fineNo").all();
+      // const fines = await page.locator(".mat-cell.cdk-column-fineNo").all();
+      const fines = await page.$$eval(
+        ".mat-cell.cdk-column-fineNo",
+        (elements) => elements.map((el) => el.textContent.trim())
+      );
 
       for (let i = 0; i < fines.length; i++) {
         const fineNumber = await fines[i].textContent();
