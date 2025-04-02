@@ -79,7 +79,10 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 import { chromium } from "playwright";
 
 export const fetchParkingFines = async (vehicle) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   const page = await browser.newPage();
 
   try {
