@@ -3,7 +3,10 @@ import * as cheerio from "cheerio";
 
 // ფუნქცია Puppeteer-ის გაშვებისათვის და ჯარიმების წამოსაღებად
 export const getFinesFromPoliceGe = async (vehicleNo, documentNo) => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   const page = await browser.newPage();
 
   try {
