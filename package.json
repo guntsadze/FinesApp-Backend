@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "postinstall": "npx playwright install",
+    "postinstall": "pnpm exec playwright install-deps ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
