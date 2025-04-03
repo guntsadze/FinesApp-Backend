@@ -76,68 +76,63 @@ export const getFinesFromPoliceGe = async (vehicleNo, documentNo) => {
 // ფუნქცია შეჩერებისათვის
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// fetchParkingFines ფუნქცია Puppeteer-ის გამოყენებით
 export const fetchParkingFines = async (vehicle) => {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
   try {
-    await page.goto("https://parking.tbilisi.gov.ge/fines?isTransit=false", {
-      waitUntil: "networkidle2",
+    await page.goto("https://parking.tbilisi.gov.ge/fines?isTransit=false");
+    await page.waitForTimeout(7000); // Wait to ensure the page loads
+
+    // Wait for the element to be available before filling the inputs
+    await page.waitForSelector("#mat-input-0", { visible: true });
+
+    await page.fill("#mat-input-0", vehicle.vehicleNo);
+    await page.fill("#mat-input-1", vehicle.companyCode);
+
+    // Wait for the submit button to be clickable and then click it
+    await page.waitForSelector("button.mat-raised-button:not([disabled])", {
+      timeout: 3000,
     });
-
-    const finesInfo = [];
-
-    await page.type("#mat-input-0", vehicle.vehicleNo);
-    await page.type("#mat-input-1", vehicle.companyCode);
-
-    // დააჭირე ძებნის ღილაკს
     await page.click("button.mat-raised-button:not([disabled])");
 
-    // დაელოდე შედეგებს
-    await page.waitForSelector(".mat-cell.cdk-column-fineNo", {
-      timeout: 5000,
-    });
-
-    // მოძებნე ყველა ჯარიმის ჩანაწერი
-    const fines = await page.$$(".mat-cell.cdk-column-fineNo");
-
-    for (let i = 0; i < fines.length; i++) {
-      const fineNumber = await page.evaluate(
-        (el) => el.textContent.trim(),
-        fines[i]
-      );
-      const createDate = await page.evaluate(
-        (el) => el.textContent.trim(),
-        await page.$$(".mat-cell.cdk-column-createDate")[i]
-      );
-      const payAmount = await page.evaluate(
-        (el) => el.textContent.trim(),
-        await page.$$(".mat-cell.cdk-column-payAmount")[i]
-      );
-      const status = await page.evaluate(
-        (el) => el.textContent.trim(),
-        await page.$$(".mat-cell.cdk-column-status")[i]
-      );
-
-      finesInfo.push({
-        fineNumber,
-        createDate,
-        payAmount,
-        status,
+    // Wait for the fines table to load
+    try {
+      await page.waitForSelector(".mat-cell.cdk-column-fineNo", {
+        timeout: 5000,
       });
-    }
 
-    // თუ არ არის ჯარიმები, გაიცემა გაფრთხილება
-    if (finesInfo.length === 0) {
+      const fines = await page.locator(".mat-cell.cdk-column-fineNo").all();
+
+      const finesInfo = [];
+      for (let i = 0; i < fines.length; i++) {
+        const fineNumber = await fines[i].textContent();
+        const createDate = await page
+          .locator(".mat-cell.cdk-column-createDate")
+          .nth(i)
+          .textContent();
+        const payAmount = await page
+          .locator(".mat-cell.cdk-column-payAmount")
+          .nth(i)
+          .textContent();
+        const status = await page
+          .locator(".mat-cell.cdk-column-status")
+          .nth(i)
+          .textContent();
+
+        finesInfo.push({
+          fineNumber: fineNumber.trim(),
+          createDate: createDate.trim(),
+          payAmount: payAmount.trim(),
+          status: status.trim(),
+        });
+      }
+
+      await browser.close();
+      return finesInfo;
+    } catch (innerError) {
       console.warn(`No fines found for vehicle ${vehicle.vehicleNo}.`);
     }
-
-    await browser.close();
-    return finesInfo;
   } catch (error) {
     console.error("Error fetching parking fines:", error);
     await browser.close();
