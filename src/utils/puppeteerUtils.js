@@ -88,7 +88,7 @@ export const fetchParkingFines = async (vehicle) => {
       waitUntil: "networkidle2", // Ensure the page is fully loaded before proceeding
     });
 
-    await delay(10000);
+    await delay(15000);
 
     const finesInfo = [];
 
