@@ -76,39 +76,40 @@ export const getFinesFromPoliceGe = async (vehicleNo, documentNo) => {
 // ფუნქცია შეჩერებისათვის
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+import { chromium } from "playwright";
+
 export const fetchParkingFines = async (vehicle) => {
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"], // Required flags for server environments
   });
   const page = await browser.newPage();
 
   try {
     await page.goto("https://parking.tbilisi.gov.ge/fines?isTransit=false");
-    await new Promise((resolve) => setTimeout(resolve, 7000));
+    await page.waitForTimeout(7000); // Wait for page to load
 
     const finesInfo = [];
 
-    await page.type("#mat-input-0", vehicle.vehicleNo);
-    await page.type("#mat-input-1", vehicle.companyCode);
+    // Fill in vehicle number and company code
+    await page.fill("#mat-input-0", vehicle.vehicleNo);
+    await page.fill("#mat-input-1", vehicle.companyCode);
 
     await page.waitForSelector("button.mat-raised-button:not([disabled])", {
       timeout: 3000,
     });
 
+    // Click the button to search fines
     await page.click("button.mat-raised-button:not([disabled])");
 
-    // ველოდებით ტაბლოს გამოჩენას, მაგრამ მივიტანთ try-catch, რომ გავაგრძელოთ მუშაობა
+    // Wait for the fines table to load
     try {
       await page.waitForSelector(".mat-cell.cdk-column-fineNo", {
         timeout: 5000,
       });
 
-      // const fines = await page.locator(".mat-cell.cdk-column-fineNo").all();
-      const fines = await page.$$eval(
-        ".mat-cell.cdk-column-fineNo",
-        (elements) => elements.map((el) => el.textContent.trim())
-      );
+      // Fetch the fines data
+      const fines = await page.locator(".mat-cell.cdk-column-fineNo").all();
 
       for (let i = 0; i < fines.length; i++) {
         const fineNumber = await fines[i].textContent();
