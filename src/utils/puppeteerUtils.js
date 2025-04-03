@@ -105,6 +105,10 @@ export const fetchParkingFines = async (vehicle) => {
       timeout: 5000,
     });
 
+    // Log the page content to debug
+    const htmlContent = await page.content();
+    console.log(htmlContent); // Log the HTML content for debugging
+
     // Extract the fines data
     const fines = await page.$$eval(".mat-cell.cdk-column-fineNo", (elements) =>
       elements.map((el) => ({
