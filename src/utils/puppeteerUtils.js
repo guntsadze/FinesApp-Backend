@@ -76,8 +76,6 @@ export const getFinesFromPoliceGe = async (vehicleNo, documentNo) => {
 // ფუნქცია შეჩერებისათვის
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-import puppeteer from "puppeteer";
-
 export const fetchParkingFines = async (vehicle) => {
   const browser = await puppeteer.launch({
     headless: "new",
