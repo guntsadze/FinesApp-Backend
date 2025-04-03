@@ -77,7 +77,10 @@ export const getFinesFromPoliceGe = async (vehicleNo, documentNo) => {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const fetchParkingFines = async (vehicle) => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"], // Add these arguments to bypass the sandbox error
+  });
   const page = await browser.newPage();
 
   try {
